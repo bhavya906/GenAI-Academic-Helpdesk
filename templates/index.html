@@ -1,0 +1,157 @@
+<html>
+<head>
+    <title>GENAI ACADEMIC HELPDESK</title>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        body{
+            margin:0px;
+            margin:0px;
+            background: #f4f4f4;
+        }
+
+        .container{
+            width: 50%;
+            margin: auto;
+            margin-top: 100px;
+            background: pink;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #chat-box{
+            border: 1px solid black;
+            padding: 10px;
+            margin-bottom: 10px;
+            height: 300px;
+            overflow-y: scroll;
+        }
+
+        input{
+            width: 75%;
+            padding: 10px;
+        }
+
+        button{
+            background-color: blueviolet;
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 2px 5px 5px grey;
+            margin-left: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #question{
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>GENAI Academic Helpdesk</h1>
+    <p class="subtitle">your intelligent campus assistant</p>
+
+    <div class="suggestions">
+        <button onclick="setQuestion('What is library timing?')">Library</button>
+        <button onclick="setQuestion('What is placement eligibility?')"> Placements</button>
+        <button onclick="setQuestion('What are hostel rules?')">Hostel</button>
+        <button onclick="setQuestion('When do exams start?')">Exams</button>
+    </div>
+
+    <div id="chat-box">
+        <div class="bot-msg">
+            <b>GENAI Bot </b><br>
+            Hello! I am your GENAI Academic Assistant.<br>
+            Ask anything about syllabus, placements, hostel,
+            exams and more
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="question"
+               placeholder="Ask your question...">
+
+        <button onclick="ask()">Send</button>
+    </div>
+
+</div>
+
+<script>
+
+function setQuestion(text){
+    document.getElementById("question").value = text;
+}
+
+async function ask(){
+
+    let q = document.getElementById("question").value;
+
+    if(q.trim() == "") return;
+
+    let box = document.getElementById("chat-box");
+
+    box.innerHTML += `
+        <div class="user-msg">
+            ${q}
+            <div class="time">
+                ${new Date().toLocaleTimeString()}
+            </div>
+        </div>
+    `;
+
+    box.innerHTML += `
+        <div class="typing" id="loading">
+            AI is typing...
+        </div>
+    `;
+
+    box.scrollTop = box.scrollHeight;
+
+    let res = await fetch("/ask", {
+        method: "POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body: JSON.stringify({
+            question:q
+        })
+    });
+
+    let data = await res.json();
+
+  
+    document.getElementById("loading").remove();
+
+    box.innerHTML += `
+        <div class="bot-msg">
+            ${data.answer}
+
+            <div class="time">
+                ${new Date().toLocaleTimeString()}
+            </div>
+        </div>
+    `;
+
+    box.scrollTop = box.scrollHeight;
+
+    
+    document.getElementById("question").value = "";
+}
+
+document.getElementById("question").addEventListener("keypress", function(event){
+
+    if(event.key === "Enter"){
+        ask();
+    }
+});
+
+</script>
+
+</body>
+</html>
